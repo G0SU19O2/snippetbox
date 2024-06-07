@@ -5,10 +5,27 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"text/template"
 )
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello from Snippetbox"))
+	w.Header().Add("Sever", "Go")
+	files := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/home.html",
+	}
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	err = ts.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
 }
 
 func snippetViewHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,17 +44,4 @@ func snippetCreateHandler(w http.ResponseWriter, r *http.Request) {
 func snippetCreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Save a new snippet"))
-}
-
-func main() {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /{$}", homeHandler)
-	mux.HandleFunc("GET /snippet/view/{id}", snippetViewHandler)
-	mux.HandleFunc("GET /snippet/create", snippetCreateHandler)
-	mux.HandleFunc("POST /snippet/create", snippetCreatePostHandler)
-
-	log.Print("starting server on 4000")
-	err := http.ListenAndServe(":4000", mux)
-	log.Fatal(err)
 }
