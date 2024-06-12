@@ -11,5 +11,6 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("GET /snippet/view/{id}", app.snippetViewHandler)
 	mux.HandleFunc("GET /snippet/create", app.snippetCreateHandler)
 	mux.HandleFunc("POST /snippet/create", app.snippetCreatePostHandler)
+	mux.HandleFunc("GET /snippet/view/latest", app.snippetLatest)
 	return mux
 }
