@@ -11,7 +11,6 @@ import (
 )
 
 func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Sever", "Go")
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
