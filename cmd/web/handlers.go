@@ -1,31 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"github.com/G0SU19O2/snippetbox/internal/models"
 )
 
 func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Sever", "Go")
-	files := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/home.html",
-	}
-	ts, err := template.ParseFiles(files...)
+	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, r, err)
 		return
 	}
-	err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	data := app.newTemplateData()
+	data.Snippets = snippets
+	app.render(w, r, http.StatusOK, "home.html", data)
 }
 
 func (app *application) snippetViewHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,15 +28,20 @@ func (app *application) snippetViewHandler(w http.ResponseWriter, r *http.Reques
 		http.NotFound(w, r)
 		return
 	}
+
 	snippet, err := app.snippets.Get(id)
 	if err != nil {
+
 		if errors.Is(err, models.ErrNoRecord) {
 			http.NotFound(w, r)
 		} else {
 			app.serverError(w, r, err)
 		}
+		return
 	}
-	fmt.Fprintf(w, "%+v", snippet)
+	data := app.newTemplateData()
+	data.Snippet = snippet
+	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
 func (app *application) snippetCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,4 +66,21 @@ func (app *application) snippetLatest(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 	}
 	fmt.Fprintf(w, "%+v", snippets)
+}
+
+func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, data templateData) {
+	ts, ok := app.templateCache[page]
+	if !ok {
+		err := fmt.Errorf("the template %s does not exist", page)
+		app.serverError(w, r, err)
+		return
+	}
+	buf := new(bytes.Buffer)
+
+	err := ts.ExecuteTemplate(buf, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+	w.WriteHeader(status)
+	buf.WriteTo(w)
 }
