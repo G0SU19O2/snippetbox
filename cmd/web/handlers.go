@@ -16,7 +16,7 @@ func (app *application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippets = snippets
 	app.render(w, r, http.StatusOK, "home.html", data)
 }
@@ -38,23 +38,33 @@ func (app *application) snippetViewHandler(w http.ResponseWriter, r *http.Reques
 		}
 		return
 	}
-	data := app.newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippet = snippet
 	app.render(w, r, http.StatusOK, "view.html", data)
 }
 
 func (app *application) snippetCreateHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display a form for creating a new snippet..."))
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "create.html", data)
 }
 
 func (app *application) snippetCreatePostHandler(w http.ResponseWriter, r *http.Request) {
-	title := "O snail"
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+	}
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
 
-	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-	expires := 7
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, r, err)
+		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
