@@ -22,6 +22,7 @@ type application struct {
 	snippets       *models.SnippetModel
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
+	users          *models.UserModel
 }
 
 func main() {
@@ -52,6 +53,7 @@ func main() {
 		snippets:       &models.SnippetModel{DB: db},
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
+		users:          &models.UserModel{DB: db},
 	}
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
