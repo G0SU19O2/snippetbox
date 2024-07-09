@@ -253,3 +253,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func ping(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte("OK"))
+}
