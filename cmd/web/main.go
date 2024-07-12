@@ -19,10 +19,10 @@ import (
 
 type application struct {
 	logger         *slog.Logger
-	snippets       *models.SnippetModel
+	snippets       models.SnippetModelInterface
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
-	users          *models.UserModel
+	users          models.UserModelInterface
 }
 
 func main() {
