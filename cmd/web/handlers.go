@@ -257,3 +257,8 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 func ping(w http.ResponseWriter, _ *http.Request) {
 	w.Write([]byte("OK"))
 }
+
+func (app *application) aboutHandler(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	app.render(w, r, http.StatusOK, "about.html", data)
+}
