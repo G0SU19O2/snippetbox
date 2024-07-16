@@ -23,11 +23,13 @@ type application struct {
 	templateCache  map[string]*template.Template
 	sessionManager *scs.SessionManager
 	users          models.UserModelInterface
+	debug          *bool
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dsn := flag.String("dsn", "web:1902@/snippetbox?parseTime=true", "MySQL data source name")
+	debug := flag.Bool("debug", false, "enable debug mode")
 	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -54,6 +56,7 @@ func main() {
 		templateCache:  templateCache,
 		sessionManager: sessionManager,
 		users:          &models.UserModel{DB: db},
+		debug:          debug,
 	}
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
