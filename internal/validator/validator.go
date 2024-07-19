@@ -54,3 +54,7 @@ func MinChars(value string, n int) bool {
 func Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
 }
+
+func Same[T comparable](first T, second T) bool {
+	return first == second
+}
